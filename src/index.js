@@ -1,7 +1,8 @@
-const ObservableStore = require("obs-store");
 const bs58 = require("bs58");
-const helper = require("./helper");
 const nacl = require('tweetnacl');
+const helper = require("./helper");
+const ObservableStore = require("obs-store");
+const solanaWeb3 = require('@solana/web3.js');
 
 
 const { solana: { HD_PATH }, solana_connection: { MAINNET }} = require('./config')
@@ -83,5 +84,15 @@ class KeyringController {
   }
 }
 
+const getBalance = async (address, network) => {
+  try {
+    const _network = helper.getNetwork(network)
+    const connection = new solanaWeb3.Connection(_network, "confirmed")
+    const accInfo = await connection.getAccountInfo(new solanaWeb3.PublicKey(address), 'confirmed')
+    return { balance: accInfo ? accInfo.lamports : 0 }
+  } catch (err) {
+    throw err
+  }
+}
 
-module.exports = { KeyringController };
+module.exports = { KeyringController, getBalance };
