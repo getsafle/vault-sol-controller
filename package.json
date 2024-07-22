@@ -1,0 +1,22 @@
+{
+  "name": "@getsafle/vault-sol-controller",
+  "version": "1.0.0",
+  "description": "Solana chain controller for Safle Vault",
+  "main": "index.js",
+  "scripts": {
+    "lint": "eslint . --ext .js",
+    "lint:fix": "eslint --fix . --ext .js",
+    "test": "mocha \"test/**.js\" --timeout 15000",
+    "test:coverage": "npm run cover:unit && npm run cover:report",
+    "test:coveragehtml": "npm run cover:unit && npm run cover:reporthtml",
+    "cover:unit": "nyc --silent npm run test",
+    "cover:report": "nyc report --reporter=lcov --reporter=text --report-dir='./jscoverage'",
+    "cover:reporthtml": "nyc report --reporter=html --report-dir='./jscoverage'"
+  },
+  "author": "SDargarh",
+  "license": "MIT",
+  "dependencies": {
+    "mocha": "^10.7.0",
+    "nyc": "^17.0.0"
+  }
+}
