@@ -6,10 +6,14 @@ name: Feature/Bugfix/dev/test branch
 on:
   push:
     branches:
+      - feature-*
+      - bugfix-*
       - dev
       - test
   pull_request:
     branches:
+        - feature-*
+        - bugfix-*
         - dev
         - test
     paths:
