@@ -13,7 +13,7 @@
     "cover:report": "nyc report --reporter=lcov --reporter=text --report-dir='./jscoverage'",
     "cover:reporthtml": "nyc report --reporter=html --report-dir='./jscoverage'"
   },
-  "author": "SDargarh",
+  "author": "",
   "license": "MIT",
   "dependencies": {
     "mocha": "^10.7.0",
