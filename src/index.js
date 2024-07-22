@@ -1,6 +1,7 @@
 const ObservableStore = require("obs-store");
 const bs58 = require("bs58");
 const helper = require("./helper");
+const nacl = require('tweetnacl');
 
 
 const { solana: { HD_PATH }, solana_connection: { MAINNET }} = require('./config')
@@ -53,6 +54,19 @@ class KeyringController {
     } catch (e) {
       return Promise.reject(e);
     }
+  }
+
+  async signMessage(message, _address) {
+    const { mnemonic, address } = this.store.getState()
+    const idx = address.indexOf(_address);
+
+    if (idx < 0)
+      throw "Invalid address, the address is not available in the wallet"
+    
+    const accountDetails = helper.setupAccount(mnemonic, helper.getHDPath(idx))
+    const msg = Buffer.from(message)
+    
+    return { signedMessage: bs58.encode(nacl.sign.detached(msg, accountDetails.secretKey)) };
   }
 
   persistAllAddress(_address) {
