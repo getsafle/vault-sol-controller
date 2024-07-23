@@ -5,7 +5,10 @@ const ObservableStore = require("obs-store");
 const solanaWeb3 = require('@solana/web3.js');
 
 
-const { solana: { HD_PATH }, solana_connection: { MAINNET }} = require('./config')
+const {
+  solana: { HD_PATH },
+  solana_connection: { MAINNET },
+} = require("./config");
 
 class KeyringController {
   constructor(opts) {
@@ -62,12 +65,39 @@ class KeyringController {
     const idx = address.indexOf(_address);
 
     if (idx < 0)
-      throw "Invalid address, the address is not available in the wallet"
-    
-    const accountDetails = helper.setupAccount(mnemonic, helper.getHDPath(idx))
-    const msg = Buffer.from(message)
-    
-    return { signedMessage: bs58.encode(nacl.sign.detached(msg, accountDetails.secretKey)) };
+      throw "Invalid address, the address is not available in the wallet";
+
+    const accountDetails = helper.setupAccount(mnemonic, helper.getHDPath(idx));
+    const msg = Buffer.from(message);
+
+    return {
+      signedMessage: bs58.encode(
+        nacl.sign.detached(msg, accountDetails.secretKey)
+      ),
+    };
+  }
+
+  async signTransaction(transaction) {
+    const { mnemonic, address, network, networkType } = this.store.getState();
+
+    const { from } = transaction;
+    const idx = address.indexOf(from);
+    if (idx < 0)
+      throw "Invalid address, the address is not available in the wallet";
+
+    try {
+      const signer = helper.setupAccount(mnemonic, helper.getHDPath(idx));
+
+      const connection = new solanaWeb3.Connection(network, "confirmed");
+
+      const rawTx = await helper.generateTransactionObject(transaction, signer, connection);
+      const rawSignedTxn = await helper.signTransaction(rawTx, signer, connection, []);
+
+      const signedTxn = rawSignedTxn.toString("hex");
+      return { signedTransaction: signedTxn };
+    } catch (err) {
+      throw err;
+    }
   }
 
   persistAllAddress(_address) {

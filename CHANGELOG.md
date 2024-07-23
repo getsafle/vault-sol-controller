@@ -8,3 +8,4 @@
 - Added initial test
 - Added functionality to sign message
 - Added get balance method to fetch SOL balance of an account
+- Added functionality to sign SOL and fungible tokens transfer transaction
