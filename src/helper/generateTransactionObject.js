@@ -48,6 +48,15 @@ async function generateTransactionObject(transaction, signer, connection) {
     );
   }
 
+  // set the desired priority fee in microLamport
+  if(transaction?.priorityFee && transaction?.priorityFee > 0) {
+    const addPriorityFee = solanaWeb3.ComputeBudgetProgram.setComputeUnitPrice({
+      microLamports: transaction.priorityFee,
+    });
+
+    rawTransaction.add(addPriorityFee);
+  }
+
   return rawTransaction;
 }
 
