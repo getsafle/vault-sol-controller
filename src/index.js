@@ -78,7 +78,7 @@ class KeyringController {
   }
 
   async signTransaction(transaction) {
-    const { mnemonic, address, network, networkType } = this.store.getState();
+    const { mnemonic, address, network } = this.store.getState();
 
     const { from } = transaction;
     const idx = address.indexOf(from);
@@ -91,9 +91,11 @@ class KeyringController {
       const connection = new solanaWeb3.Connection(network, "confirmed");
 
       const rawTx = await helper.generateTransactionObject(transaction, signer, connection);
+      
       const rawSignedTxn = await helper.signTransaction(rawTx, signer, connection, []);
 
-      const signedTxn = rawSignedTxn.toString("hex");
+      const signedTxn = rawSignedTxn.serialize().toString("hex");
+
       return { signedTransaction: signedTxn };
     } catch (err) {
       throw err;
@@ -114,6 +116,28 @@ class KeyringController {
       console.log(err);
       throw err
     }
+  }
+
+  async getFees(rawTransaction) {
+    const { mnemonic, address, network } = this.store.getState();
+
+    const { from } = rawTransaction;
+    const idx = address.indexOf(from);
+    if (idx < 0)
+      throw "Invalid address, the address is not available in the wallet";
+
+      const signer = helper.setupAccount(mnemonic, helper.getHDPath(idx));
+
+      const connection = new solanaWeb3.Connection(network, "confirmed");
+
+      const rawTx = await helper.generateTransactionObject(rawTransaction, signer, connection);
+      
+      const rawSignedTxn = await helper.signTransaction(rawTx, signer, connection, []);
+
+      const fees = await connection.getFeeForMessage(rawSignedTxn.compileMessage());
+
+      return { fees: fees.value };
+
   }
 
   persistAllAddress(_address) {
