@@ -11,3 +11,4 @@
 - Added functionality to sign SOL and fungible tokens transfer transaction
 - Added functionality to broadcast a signed transaction
 - Added functionality to get estimated fee for a transaction
+- Added functionality to accept priority fee for a transaction
