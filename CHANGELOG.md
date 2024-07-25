@@ -14,3 +14,7 @@
 - Added functionality to accept priority fee for a transaction
 - Added test cases
 - Added readme
+
+### 1.0.1 (2024-7-25)
+
+- Updated entry point in json package
