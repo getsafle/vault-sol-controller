@@ -16,6 +16,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@solana/spl-token": "^0.4.8",
     "@solana/web3.js": "^1.95.1",
     "bip39": "^3.1.0",
     "bs58": "^5.0.0",
