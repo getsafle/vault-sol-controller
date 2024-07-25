@@ -6,3 +6,4 @@
 - Added getAccounts() method to fetch list of generated accounts
 - Added importWallet() to import account using privateKey
 - Added initial test
+- Added functionality to sign message
