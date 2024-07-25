@@ -4,13 +4,14 @@ async function sign(transaction, signer, connection, otherSigners) {
         await connection.getRecentBlockhash('max')
     ).blockhash;
 
+    transaction.feePayer = signer.publicKey;
+
     transaction.sign(signer)
     if (otherSigners.length > 0) {
         transaction.partialSign(...otherSigners);
     }
 
-    const rawTransaction = transaction.serialize();
-    return rawTransaction;
+    return transaction;
 }
 
 module.exports = sign
