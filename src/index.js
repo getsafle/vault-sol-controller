@@ -100,6 +100,22 @@ class KeyringController {
     }
   }
 
+  async sendTransaction(rawTransaction) {
+
+    try {
+    const { network } = this.store.getState()
+    const stringBuff = Buffer.from(rawTransaction, 'hex')
+
+    const connection = new solanaWeb3.Connection(network, "confirmed")
+    const transactionDetails = await connection.sendRawTransaction(stringBuff)
+    return { transactionDetails: transactionDetails }
+
+    } catch (err) {
+      console.log(err);
+      throw err
+    }
+  }
+
   persistAllAddress(_address) {
     const { address } = this.store.getState();
     let newAdd = address;
