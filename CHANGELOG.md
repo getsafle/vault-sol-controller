@@ -21,4 +21,4 @@
 
 ### 1.0.2 (2025-05-05)
 
-- Updating solana transaction function for lefi swap which supports newer type of solana transaction
+- Updating solana transaction function for lefi swap which supports different type of solana transaction
