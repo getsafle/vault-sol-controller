@@ -1,9 +1,8 @@
 const bs58 = require("bs58");
-const nacl = require('tweetnacl');
+const nacl = require("tweetnacl");
 const helper = require("./helper");
 const ObservableStore = require("obs-store");
-const solanaWeb3 = require('@solana/web3.js');
-
+const solanaWeb3 = require("@solana/web3.js");
 
 const {
   solana: { HD_PATH },
@@ -61,7 +60,7 @@ class KeyringController {
   }
 
   async signMessage(message, _address) {
-    const { mnemonic, address } = this.store.getState()
+    const { mnemonic, address } = this.store.getState();
     const idx = address.indexOf(_address);
 
     if (idx < 0)
@@ -87,34 +86,55 @@ class KeyringController {
 
     try {
       const signer = helper.setupAccount(mnemonic, helper.getHDPath(idx));
-
       const connection = new solanaWeb3.Connection(network, "confirmed");
 
-      const rawTx = await helper.generateTransactionObject(transaction, signer, connection);
-      
-      const rawSignedTxn = await helper.signTransaction(rawTx, signer, connection, []);
+      // 🔄 Generate the transaction object (legacy or versioned)
+      const rawTx = await helper.generateTransactionObject(
+        transaction,
+        signer,
+        connection
+      );
 
-      const signedTxn = rawSignedTxn.serialize().toString("hex");
+      // 🔁 Return serialized transaction in hex
+      if (transaction.serializedTx) {
+        // 🔐 Sign if it's not already signed
+        if (
+          rawTx.signatures &&
+          rawTx.signatures.some((sig) => sig === undefined || sig.length === 0)
+        ) {
+          rawTx.sign([signer]);
+        }
+        const signedTxn = Buffer.from(rawTx.serialize()).toString("hex");
+        return { signedTransaction: signedTxn };
+      } else {
+        const rawSignedTxn = await helper.signTransaction(
+          rawTx,
+          signer,
+          connection,
+          []
+        );
 
-      return { signedTransaction: signedTxn };
+        const signedTxn = rawSignedTxn.serialize().toString("hex");
+        return { signedTransaction: signedTxn };
+      }
     } catch (err) {
       throw err;
     }
   }
 
   async sendTransaction(rawTransaction) {
-
     try {
-    const { network } = this.store.getState()
-    const stringBuff = Buffer.from(rawTransaction, 'hex')
+      const { network } = this.store.getState();
+      const stringBuff = Buffer.from(rawTransaction, "hex");
 
-    const connection = new solanaWeb3.Connection(network, "confirmed")
-    const transactionDetails = await connection.sendRawTransaction(stringBuff)
-    return { transactionDetails: transactionDetails }
-
+      const connection = new solanaWeb3.Connection(network, "confirmed");
+      const transactionDetails = await connection.sendRawTransaction(
+        stringBuff
+      );
+      return { transactionDetails: transactionDetails };
     } catch (err) {
       console.log(err);
-      throw err
+      throw err;
     }
   }
 
@@ -126,18 +146,28 @@ class KeyringController {
     if (idx < 0)
       throw "Invalid address, the address is not available in the wallet";
 
-      const signer = helper.setupAccount(mnemonic, helper.getHDPath(idx));
+    const signer = helper.setupAccount(mnemonic, helper.getHDPath(idx));
 
-      const connection = new solanaWeb3.Connection(network, "confirmed");
+    const connection = new solanaWeb3.Connection(network, "confirmed");
 
-      const rawTx = await helper.generateTransactionObject(rawTransaction, signer, connection);
-      
-      const rawSignedTxn = await helper.signTransaction(rawTx, signer, connection, []);
+    const rawTx = await helper.generateTransactionObject(
+      rawTransaction,
+      signer,
+      connection
+    );
 
-      const fees = await connection.getFeeForMessage(rawSignedTxn.compileMessage());
+    const rawSignedTxn = await helper.signTransaction(
+      rawTx,
+      signer,
+      connection,
+      []
+    );
 
-      return { fees: fees.value };
+    const fees = await connection.getFeeForMessage(
+      rawSignedTxn.compileMessage()
+    );
 
+    return { fees: fees.value };
   }
 
   persistAllAddress(_address) {
@@ -156,13 +186,16 @@ class KeyringController {
 
 const getBalance = async (address, network) => {
   try {
-    const _network = helper.getNetwork(network)
-    const connection = new solanaWeb3.Connection(_network, "confirmed")
-    const accInfo = await connection.getAccountInfo(new solanaWeb3.PublicKey(address), 'confirmed')
-    return { balance: accInfo ? accInfo.lamports : 0 }
+    const _network = helper.getNetwork(network);
+    const connection = new solanaWeb3.Connection(_network, "confirmed");
+    const accInfo = await connection.getAccountInfo(
+      new solanaWeb3.PublicKey(address),
+      "confirmed"
+    );
+    return { balance: accInfo ? accInfo.lamports : 0 };
   } catch (err) {
-    throw err
+    throw err;
   }
-}
+};
 
 module.exports = { KeyringController, getBalance };
