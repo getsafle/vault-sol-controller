@@ -18,3 +18,7 @@
 ### 1.0.1 (2024-7-25)
 
 - Updated entry point in json package
+
+### 1.0.2 (2025-05-05)
+
+- Updating solana transaction function for lefi swap which supports different type of solana transaction

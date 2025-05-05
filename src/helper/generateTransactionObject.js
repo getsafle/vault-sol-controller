@@ -1,9 +1,26 @@
-const solanaWeb3 = require('@solana/web3.js');
-const { getOrCreateAssociatedTokenAccount, createTransferInstruction} = require("@solana/spl-token");
+const solanaWeb3 = require("@solana/web3.js");
+const {
+  getOrCreateAssociatedTokenAccount,
+  createTransferInstruction,
+} = require("@solana/spl-token");
 
-const { solana_transaction: { NATIVE_TRANSFER, TOKEN_TRANSFER }} = require("../config");
+const {
+  solana_transaction: { NATIVE_TRANSFER, TOKEN_TRANSFER },
+} = require("../config");
 
 async function generateTransactionObject(transaction, signer, connection) {
+  // ✅ Handle base64 versioned transaction (bypasses normal logic)
+  if (transaction.serializedTx) {
+    const rawBuffer = Buffer.from(transaction.serializedTx, "base64");
+    const versionedTx = solanaWeb3.VersionedTransaction.deserialize(rawBuffer);
+
+    // ✅ Sign the deserialized versioned transaction
+    versionedTx.sign([signer]);
+
+    return versionedTx;
+  }
+
+  // 🔁 Legacy transaction types
   const { txnType } = transaction;
   let rawTransaction = {};
 
@@ -48,16 +65,14 @@ async function generateTransactionObject(transaction, signer, connection) {
     );
   }
 
-  // set the desired priority fee in microLamport
-  if(transaction?.priorityFee && transaction?.priorityFee > 0) {
+  // ⏫ Optional: Add priority fee if needed
+  if (transaction?.priorityFee && transaction?.priorityFee > 0) {
     const addPriorityFee = solanaWeb3.ComputeBudgetProgram.setComputeUnitPrice({
       microLamports: transaction.priorityFee,
     });
-
     rawTransaction.add(addPriorityFee);
   }
 
   return rawTransaction;
 }
-
 module.exports = generateTransactionObject;
